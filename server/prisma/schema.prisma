@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String?
+  email        String    @unique
+  password     String
+  role         Role      @default(USER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  refreshToken String?   @unique
+  cart         Cart?
+  address      Address[]
+  orders       Order[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  brand       String
+  description String
+  category    String
+  gender      String
+  size        String[]
+  colors      String[]
+  price       Float
+  stock       Int
+  soldCount   Int
+  rating      Float?
+  images      String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isFeatured  Boolean  @default(false)
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  productID String
+  quantity  Int
+  size      String?
+  color     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productID, size, color])
+}
+
+model FeatureBanner {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  discoundPercent Float
+  startDate       DateTime
+  endDate         DateTime
+  usugeLimit      Int
+  usuageCount     Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  orders          Order[]
+}
+
+enum Role {
+  USER
+  SUPER_ADMIN
+}
+
+model Address {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  name          String
+  address       String
+  city          String
+  country       String
+  postalAddress String
+  phone         String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  orders        Order[]
+
+  @@index([userId])
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  addressId     String
+  items         OrderItems[]
+  couponId      String?
+  coupon        Coupon?       @relation(fields: [couponId], references: [id])
+  total         Float
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentID     String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  Address Address @relation(fields: [addressId], references: [id])
+
+  @@index([userId])
+  @@index([addressId])
+  @@index([couponId])
+}
+
+model OrderItems {
+  id              String   @id @default(cuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id])
+  productId       String
+  productName     String
+  ProductCategory String
+  quantity        Int
+  size            String?
+  color           String?
+  price           Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+}
