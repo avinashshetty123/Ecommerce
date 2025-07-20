@@ -1,0 +1,10 @@
+import express from "express";
+import { authenticateJwt } from "../middleware/authMiddleware";
+import {createAddress,deleteAddress,getAddress,updateaddress} from "../controllers/addresscontroller";
+const router=express.Router();
+router.use(authenticateJwt);
+router.post('/add-address',createAddress);
+router.get('/get-address', getAddress);
+router.delete('/delete-address/:id',deleteAddress);
+router.put('/update-address/:id', updateaddress);
+export default router;

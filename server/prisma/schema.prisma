@@ -35,7 +35,7 @@ model Product {
   stock       Int
   soldCount   Int
   rating      Float?
-  images      String[]
+  images      Json
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   isFeatured  Boolean  @default(false)
@@ -66,7 +66,7 @@ model CartItem {
 
 model FeatureBanner {
   id        String   @id @default(cuid())
-  imageUrl  String
+  imageUrl  Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
